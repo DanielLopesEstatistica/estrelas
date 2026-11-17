@@ -1,21 +1,23 @@
-﻿# Estrelas
+﻿<sub>**Datas:** pasta 17/05/2023 · código 17/05/2023 (`sdss_ddr14.csv`)</sub>
 
-## Data de criação
+# Estrelas e objetos SDSS
 
-Datas inferidas dos metadados dos arquivos em `C:\R\Estrelas` (Windows).
+Diagrama HR com amostra de **6 classes** e clusterização em levantamento **SDSS**.
 
-| Referência | Data |
-|------------|------|
-| Pasta criada no disco | 17 de maio de 2023 |
-| Primeiro código ou notebook versionado | 19 de maio de 2023 (`Estrelas.Rmd`) |
-| Repositório Git (commit inicial) | 16 de novembro de 2026 |
+## O que o código faz
 
-Projeto local em `C:\R\Estrelas`.
+`Estrelas.Rmd`:
 
-## Como usar
+1. **`6 class csv.csv`**: diagrama temperatura–luminosidade (cor/classe espectral).
+2. **`sdss_ddr14.csv`**: scatter `u-g` vs log(redshift); **k-means** (k=3) comparado a `class` (Quasar/Galaxy/Star).
 
-Abra os arquivos `.R`, `.Rmd`, `.py` ou o `.Rproj` nesta pasta no RStudio ou no editor de sua preferência.
+## Dados
 
-## Dados grandes
+| Arquivo | Descrição |
+|---------|-----------|
+| `6 class csv.csv` | Estrelas modelo por classe |
+| `sdss_ddr14.csv` | Recorte SDSS DR14 (grande; fotometria + classificação) |
 
-Arquivos acima de 100 MB podem estar listados no `.gitignore`; obtenha-os localmente se o código referenciar esses caminhos.
+## Como rodar
+
+Knit `Estrelas.Rmd` (`tidyverse`).
