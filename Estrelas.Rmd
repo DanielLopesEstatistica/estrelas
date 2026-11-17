@@ -1,0 +1,130 @@
+---
+title: "Estrelas"
+output: html_document
+date: "2023-05-18"
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+data1 = read_csv("sdss_ddr14.csv")
+data2 = read_csv("6 class csv.csv")
+```
+
+```{r}
+convert_str = function(str){
+  if(str == "blue white"){str = "blue"}
+  if(str == "yellowish white" || str == "yellow-white"){str = "yellow"}
+  if(str == "pale yellow orange" || str == "yellowish"){str = "yellow"}
+  if(str == "blue-white"){str = "blue"}
+  if(str == "whitish" || str == "white-yellow"){str = "white"}
+  if(str == "orange-red"){str = "orange"}
+  return(str)
+}
+convert_str = Vectorize(convert_str)
+```
+
+```{r}
+data2 = data2 %>% 
+  mutate(color = `Star color`|> str_to_lower())
+
+data2$color = data2$color |> convert_str()
+```
+
+```{r}
+color_palette <- setNames(c("#FF2400", "#42cef5", "#e8f6fa", "#e9f542", "#f59942"), unique(data2$color))
+
+plot = ggplot(data2, aes(x = `Temperature (K)`, y = log(`Luminosity(L/Lo)`), color = "black",
+                 fill = color, size = `Radius(R/Ro)`))+
+  geom_point(shape = 21, stroke = 1)+
+  scale_x_reverse()+
+  scale_color_manual(values = "black")+
+  scale_fill_manual(values = color_palette, labels = c("Blue", "Orange", "Red",
+                                                       "White", "Yellow"), 
+                    guide = guide_legend(override.aes = list(size = 5)))+
+  guides(color = FALSE)+
+  scale_size(range = c(3, 10)) +
+  labs(y = "Luminosity (L/Lo)", fill = "Star Color")+
+  theme_classic()
+
+plot
+```
+
+```{r}
+get_all_plots = function(data2){
+  color_palette <- setNames(c("#FF2400", "#42cef5", "#e8f6fa", "#e9f542", "#f59942"),
+                            unique(data2$color))
+  
+  density_palette = c("red", "blue", "green", "yellow", "orange", "purple", "pink", "brown")
+  
+  density_legend_labels <- unique(data2$`Spectral Class`)
+  
+  plot = ggplot()+
+    geom_point(data = data2, 
+               aes(x = `Temperature (K)`, y = log(`Luminosity(L/Lo)`), color = "black",
+                   fill = color, size = `Radius(R/Ro)`),
+               shape = 21, stroke = 1)+
+    scale_x_reverse()+
+    scale_color_manual(values = "black")+
+    scale_fill_manual(values = color_palette, labels = c("Blue", "Orange", "Red",
+                                                         "White", "Yellow"), 
+                      guide = guide_legend(override.aes = list(size = 5)))+
+    guides(color = FALSE)+
+    scale_size(range = c(3, 10)) +
+    labs(y = "Luminosity (L/Lo)", fill = "Star Color")+
+    theme_classic()
+  
+  vetor = unique(data2$`Spectral Class`)
+  n = length(vetor)
+  
+  for(k in 1:(n-1)){
+    ggobj = stat_density_2d(data = data2[data2[["Spectral Class"]] == vetor[k],],
+                            aes(x = `Temperature (K)`,
+                                y = log(`Luminosity(L/Lo)`)),
+                            geom = "polygon", alpha = 0.2,
+                            fill = density_palette[k])
+    plot = plot+ggobj
+  }
+  
+  ggobj = stat_density_2d(data = data2[data2[["Spectral Class"]] == "O",],
+                            aes(x = `Temperature (K)`,
+                                y = log(`Luminosity(L/Lo)`)),
+                            geom = "polygon", alpha = 0.2,
+                            fill = density_palette[n])
+  plot = plot+ggobj
+  
+  return(plot)
+}
+
+get_all_plots(data2)
+```
+
+```{r}
+ggplot(data = data1, aes(x = `u-g`, y = log(redshift), color = class))+
+  geom_point()+
+  labs(x = "U-G", y = "Redshift (Log)", color = "Class")+
+  theme_classic()
+```
+
+
+```{r}
+data1_plot = data1[data1["redshift"] > 0, ]
+data1_clean = data1_plot[,c(15,19)]
+data1_clean$redshift = log(data1_clean$redshift)
+#data1_clean = data1_clean |> lapply(scale) |> as.data.frame()
+
+set.seed(69)
+clusters = kmeans(data1_clean, centers = 3)
+
+data1_plot$clusters = unlist(clusters$cluster) |> as.factor()
+
+ggplot(data = data1_plot, aes(x = `u-g`, y = log(redshift), color = clusters))+
+  geom_point()+
+  labs(x = "U-G", y = "Redshift (Log)", color = "Class")+
+  scale_color_manual(values = c("1" = "#E41A1C", "2" = "#4DAF4A", "3" = "#377EB8"),
+                     labels = c("Quasar", "Galaxy", "Star"))+
+  theme_classic()
+```
+
